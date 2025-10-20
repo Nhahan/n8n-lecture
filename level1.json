@@ -1,0 +1,116 @@
+{
+  "name": "Level 1",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "yotuube",
+        "formDescription": "videoId",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "videoId"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -480,
+        32
+      ],
+      "id": "a31dee81-1933-4cae-aeb5-f430c0e0c4fd",
+      "name": "On form submission",
+      "webhookId": "b8ff6c28-59df-44e7-95db-9628f83014e9"
+    },
+    {
+      "parameters": {
+        "url": "https://api.supadata.ai/v1/transcript",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"url\": \"https://www.youtube.com/watch?v={{ $json.videoId }}\",\n  \"lang\": \"ko\",\n  \"text\": true,\n  \"mode\": \"auto\",\n  \"chunkSize\": 4000\n}\n",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"x-api-key\": \"{supadata API키}\",\n  \"accept\": \"application/json\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -272,
+        32
+      ],
+      "id": "8314ef9a-5a73-4edc-a36b-ad83c2ed72fd",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=당신은 YouTube 영상을 요약하는 전문가입니다.\n주어진 자막을 정확히 3줄로 요약해주세요.\n각 줄은 핵심 메시지 하나를 담아야 합니다.\n• 로 시작하는 불릿 포인트 형식으로 작성하세요.\n\n다음 YouTube 자막을 3줄로 요약해주세요: {{ $json.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        32
+      ],
+      "id": "268cb07e-49fe-420e-87b0-a409910fe6d1",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "U6vLIIyTZ1sbqPZY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e647f2fe-c786-4fad-b263-c99fc1e4d6f7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "978232dc35dd43ac909f5df8bd4a1e2662e18da849fc7dcc7fd9b2c5a776ae18"
+  },
+  "id": "gLvxaaUTRKV41Ju1",
+  "tags": []
+}
