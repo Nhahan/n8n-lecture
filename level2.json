@@ -1,0 +1,141 @@
+{
+  "name": "Level 2",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "youtube",
+        "formDescription": "videoId",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "videoId"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -480,
+        32
+      ],
+      "id": "435285c6-1b0e-4b76-96ab-64f18c857de6",
+      "name": "On form submission",
+      "webhookId": "b67010b0-95fe-408a-b0a8-3c8c1b522b25"
+    },
+    {
+      "parameters": {
+        "url": "https://api.supadata.ai/v1/transcript",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"url\": \"https://www.youtube.com/watch?v={{ $json.videoId }}\",\n  \"lang\": \"ko\",\n  \"text\": true,\n  \"mode\": \"auto\",\n  \"chunkSize\": 4000\n}\n",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"x-api-key\": \"{supadata API키}\",\n  \"accept\": \"application/json\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -272,
+        32
+      ],
+      "id": "90e15b51-2491-428b-810d-4c5e33dc2a67",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=YouTube 영상 자막을 분석하여 핵심 인사이트를 구조화된 JSON 형식으로 추출하세요. 자막에 명시된 내용만 사용하세요.\n\n출력 JSON 형식:\n{\n  \"category\": \"string\",\n  \"summary\": [\"string\", \"string\", \"string\"],\n  \"insights\": [\"string\", \"string\", \"string\"],\n  \"actions\": [\"string\", \"string\", \"string\"],\n  \"keywords\": [\"string\", \"string\", \"string\", \"string\", \"string\"]\n}\n\n요구사항:\n- summary: 정확히 3개 항목, 구체적 수치 포함 (퍼센트, 배수, 금액 등)\n- insights: 자막 데이터 기반 실행 가능한 인사이트 3-5개\n- actions: 즉시 실행 가능한 액션 아이템 3개\n- keywords: 정확히 5개 핵심 키워드\n- 자막 내용만 사용, 추측 금지\n\n예시:\n\n자막: \"\"\"2025년 틱톡 마케팅 예산을 30% 늘려야 합니다. 15초 숏폼 영상의 전환율이 일반 영상 대비 3배 높습니다. AI 영상 편집 툴로 제작비 50% 절감 가능합니다.\"\"\"\n출력:\n{\n  \"category\": \"마케팅\",\n  \"summary\": [\n    \"2025년 틱톡 마케팅 예산 30% 증액 권장\",\n    \"15초 숏폼 영상 전환율이 일반 대비 3배\",\n    \"AI 툴로 제작비 50% 절감\"\n  ],\n  \"insights\": [\n    \"틱톡 투자 효율이 타 채널 대비 최고\",\n    \"짧은 영상일수록 전환율 높음\",\n    \"AI 툴 활용으로 비용 절감 가능\"\n  ],\n  \"actions\": [\n    \"틱톡 비즈니스 계정 개설\",\n    \"15초 영상 템플릿 5개 제작\",\n    \"마케팅 예산 재배분 검토\"\n  ],\n  \"keywords\": [\"틱톡마케팅\", \"숏폼\", \"전환율\", \"AI편집\", \"2025전략\"]\n}\n\n자막: \"\"\"React 19의 use() 훅으로 비동기 페칭이 간단해집니다. 코드량 40% 감소, 개발 시간 30% 단축.\"\"\"\n출력:\n{\n  \"category\": \"기술\",\n  \"summary\": [\n    \"React 19 use() 훅으로 비동기 처리 간소화\",\n    \"기존 대비 코드량 40% 감소\",\n    \"개발 시간 30% 단축\"\n  ],\n  \"insights\": [\n    \"use() 훅이 비동기 로직의 새 표준\",\n    \"코드 복잡도 감소로 유지보수성 향상\",\n    \"생산성 30% 증가\"\n  ],\n  \"actions\": [\n    \"React 19 베타 문서 읽기\",\n    \"토이 프로젝트로 use() 훅 실습\",\n    \"기존 코드 리팩토링 계획\"\n  ],\n  \"keywords\": [\"React19\", \"use훅\", \"비동기\", \"최적화\", \"생산성\"]\n}\n\n이제 다음 자막을 동일한 형식으로 분석하세요:\n\n자막: \"\"\"\n{{ $json.content }}\n\"\"\""
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        32
+      ],
+      "id": "a7a889e7-870a-4738-bd90-a4e042cd6725",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "U6vLIIyTZ1sbqPZY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json?.content?.parts?.[0]?.text ?? \"\";\nconst block = raw.match(/```(?:json)?\\s*([\\s\\S]*?)```/i);\nconst candidate = block ? block[1] : raw;\nconst brace = candidate.match(/{[\\s\\S]*}/);\nconst jsonStr = brace ? brace[0] : candidate;\n\nlet obj;\ntry { obj = JSON.parse(jsonStr); } catch { obj = null; }\n\nreturn { json: obj };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        32
+      ],
+      "id": "2c63556f-6eae-47f1-b49a-6e06ca245543",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "66bc8379-f210-42a7-b8f7-36e68587b6df",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "978232dc35dd43ac909f5df8bd4a1e2662e18da849fc7dcc7fd9b2c5a776ae18"
+  },
+  "id": "FypfsOJ8rSFWGWiX",
+  "tags": []
+}
