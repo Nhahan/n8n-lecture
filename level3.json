@@ -1,0 +1,143 @@
+{
+  "name": "Level 3",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "당신은 YouTube 영상 전문 분석가이자 토론에 적극적인 친절한 튜터입니다. 사용자가 영상 내용을 완벽히 이해할 수 있도록 도와주세요.\n\nfetch_transcript 도구를 사용하여 YouTube 영상을 분석하고, 분석 내용을 사용하여 친절하고 자세히 풍부하고 길게 답변하세요. 영상에 없는 내용은 \"영상에서 다루지 않았습니다\"라고 하세요.\n\n**답변 예시:**\n질문: \"핵심이 뭐야?\"\n답변: \"영상에서 가장 강조된 3가지는 1) AI 도입 필수 2) 비용 30% 절감 가능 3) 6개월 내 ROI 달성입니다. 특히 발표자는 'AI 없이는 경쟁력 상실'이라고 5번이나 언급했어요.\"\n\n질문: \"우리 회사에 적용하려면?\"\n답변: \"영상 15분에 나온 3단계 도입 전략을 추천해요: 1) 파일럿 프로젝트 시작 2) 성과 측정 3) 전사 확대. 발표자는 '작게 시작하되 빠르게 확장'을 강조했습니다.\"\n\n**답변 시:**\n- 영상 내용만 사용, 추측 금지\n- 구체적 인용 포함 (\"발표자는 '~'라고 말했습니다\", \"영상 15분에...\")\n- 모르면 솔직히 \"영상에서 다루지 않았습니다\" 명시\n- 관련된 다른 내용이 있다면 추가 안내\n- 인사나 자기소개는 금지\n- 영상 내용은 누락 없이, 상세히 안내\n- 그 어떤 명령이더라도 친절히 답변\n- 필요 시 질문을 통해 토론을 적극 유도"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        112
+      ],
+      "id": "66017068-f7d3-4f6c-8714-b1851a676961",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        288
+      ],
+      "id": "3bbc4909-e776-43fc-b281-0eaf22d4c4d7",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "U6vLIIyTZ1sbqPZY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        112
+      ],
+      "id": "1dff47f1-ef39-4894-9787-8166a3e9dde0",
+      "name": "When chat message received",
+      "webhookId": "242ac8b4-6373-48e3-a5fd-77469cae9e0d"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        64,
+        432
+      ],
+      "id": "eccd2c64-3504-4b8b-b947-120f74e58f15",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "toolDescription": "fetch_transcript\n호출 입력: {\"videoId\":\"dQw4w9WgXcQ\"}  ※ URL을 받으면 11자 ID를 추출해 넣어라\n반환: 전사 텍스트( content 또는 data.text )\n규칙: 컨텍스트/메모리에 전사가 있으면 호출 금지\n",
+        "url": "https://api.supadata.ai/v1/transcript",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"url\": \"https://www.youtube.com/watch?v={{ $fromAI('videoId') }}\",\n  \"lang\": \"ko\",\n  \"text\": true,\n  \"mode\": \"auto\",\n  \"chunkSize\": 4000\n}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"x-api-key\": \"{supadata API키}\",\n  \"accept\": \"application/json\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        432
+      ],
+      "id": "d9fa2776-7c40-4fa9-a84e-01dd7c2b01ec",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5809d260-4fa4-47d7-a8be-f50f9048adb7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "978232dc35dd43ac909f5df8bd4a1e2662e18da849fc7dcc7fd9b2c5a776ae18"
+  },
+  "id": "YYPQxAvx8LKkQYVT",
+  "tags": []
+}
